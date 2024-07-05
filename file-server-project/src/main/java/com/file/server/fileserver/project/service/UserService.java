@@ -2,12 +2,16 @@ package com.file.server.fileserver.project.service;
 
 import com.file.server.fileserver.project.data.dto.AuthenticationRequest;
 import com.file.server.fileserver.project.data.model.Users;
+import com.file.server.fileserver.project.exceptions.BadRequestException;
+import com.file.server.fileserver.project.exceptions.NotFoundException;
 import com.file.server.fileserver.project.exceptions.UserAlreadyExistException;
 import com.file.server.fileserver.project.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +50,25 @@ public class UserService implements IUserService{
 
     @Override
     public String validateToken(String token) {
-        return "";
+        Optional <Users> user = this.usersRepository.findUsersByVerificationToken(token);
+        if (user.isEmpty()){
+            throw new NotFoundException("Invalid Verification Token");
+        }
+        if (this.tokenExpired(user.get().getTokenExpiry())){
+            throw new BadRequestException("Verification Token Expired");
+        }
+        user.get().setEnabled(true);
+        user.get().setVerificationToken(null);
+        user.get().setTokenExpiry(null);
+        this.usersRepository.save(user.get());
+
+
+        return "verified";
     }
+
+    private boolean tokenExpired(Date tokenDate){
+        Calendar calendar = Calendar.getInstance();
+        return tokenDate.getTime() - calendar.getTime().getTime() <= 0;
+    }
+    
 }
