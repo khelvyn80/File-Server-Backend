@@ -7,6 +7,7 @@ import com.file.server.fileserver.project.exceptions.NotFoundException;
 import com.file.server.fileserver.project.exceptions.UserAlreadyExistException;
 import com.file.server.fileserver.project.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,24 @@ public class UserService implements IUserService{
 
 
     @Override
-    public boolean verifyUser(String email) {
-        return false;
+    public String verifyUser(String token) {
+            var user = this.usersRepository.findUsersByVerificationToken(token);
+            if(user.isEmpty()){
+                throw new UsernameNotFoundException("User does not exist");
+            }
+            if(user.isPresent()){
+                if(user.get().isEnabled()){
+                    throw new BadRequestException("User is already registered");
+                } else if (user.get().getTokenExpiry().getTime()-Calendar.getInstance().getTimeInMillis()<=0) {
+                    throw new BadRequestException("Token is expired");
+                }
+                else {
+                    user.get().setEnabled(true);
+                    usersRepository.save(user.get());
+                    return "valid";
+                }
+            }
+            return "invalid";
     }
 
     @Override

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface IUserService {
 
-    boolean verifyUser(String email);
+    String verifyUser(String token);
     Users registerUser (AuthenticationRequest request);
     List<Users> getAllUsers();
     String validateToken(String token);

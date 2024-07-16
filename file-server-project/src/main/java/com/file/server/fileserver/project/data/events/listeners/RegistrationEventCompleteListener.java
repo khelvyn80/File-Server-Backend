@@ -3,6 +3,7 @@ package com.file.server.fileserver.project.data.events.listeners;
 import com.file.server.fileserver.project.data.events.hello.RegistrationCompleteEvent;
 import com.file.server.fileserver.project.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -11,6 +12,7 @@ import java.sql.Date;
 import java.util.Calendar;
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 public class RegistrationEventCompleteListener {
 
@@ -26,13 +28,15 @@ public class RegistrationEventCompleteListener {
         String token = UUID.randomUUID().toString();
 
         // 3. Build the url;
-        String url = event.getApplicationUrl()+token;
+        String url = event.getApplicationUrl()+"/verify?token="+token;
 
         // 4. Save url in the user repo
         user.setVerificationToken(token);
         user.setTokenExpiry(this.expiryToken());
 
         //5. Send/publish the url;
+        log.info("Click on the ling to verify your account : {}",url);
+        System.out.println("Click on the ling to verify your account : "+url);
     }
 
     private Date expiryToken(){
