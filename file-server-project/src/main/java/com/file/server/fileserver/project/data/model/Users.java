@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.annotations.NaturalId;
 
 import java.sql.Date;
+import java.util.Calendar;
 
 @Entity
 @Data
@@ -21,4 +22,11 @@ public class Users {
     private String verificationToken;
     private Date tokenExpiry;
     private Role role;
-}
+
+
+
+
+
+
+
+    }

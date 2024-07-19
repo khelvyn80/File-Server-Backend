@@ -10,5 +10,5 @@ public interface IUserService {
     String verifyUser(String token);
     Users registerUser (AuthenticationRequest request);
     List<Users> getAllUsers();
-    String validateToken(String token);
+
 }
