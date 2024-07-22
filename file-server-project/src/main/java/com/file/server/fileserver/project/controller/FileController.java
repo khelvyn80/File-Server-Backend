@@ -1,6 +1,7 @@
 package com.file.server.fileserver.project.controller;
 
 import com.file.server.fileserver.project.data.dto.FileDTO;
+import com.file.server.fileserver.project.data.model.FileType;
 import com.file.server.fileserver.project.exceptions.NotFoundException;
 import com.file.server.fileserver.project.repository.FileRepository;
 import com.file.server.fileserver.project.service.FileService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.MalformedURLException;
 
@@ -27,9 +29,18 @@ public class FileController {
     private final FileService fileService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestBody FileDTO fileDTO) throws Exception {
-        var file = this.fileService.uploadFile(fileDTO);
-        return ResponseEntity.ok("File uploaded successfully "+fileDTO.getFile().getOriginalFilename());
+    public ResponseEntity<String> uploadFile(@RequestParam("title") String title,
+                                             @RequestParam("description") String description,
+                                             @RequestParam("fileType") FileType fileType,
+                                             @RequestParam("file")MultipartFile file) throws Exception {
+
+        FileDTO fileDTO = new FileDTO();
+        fileDTO.setTitle(title);
+        fileDTO.setDescription(description);
+        fileDTO.setFileType(fileType);
+        fileDTO.setFile(file);
+        var fileEntity = this.fileService.uploadFile(fileDTO);
+        return ResponseEntity.ok("File uploaded successfully "+fileEntity.getFileName());
     }
 
 

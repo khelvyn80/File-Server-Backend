@@ -48,38 +48,37 @@ public class FileService {
         return file.get();
     }
 
-    public FileEntity uploadFile(FileDTO fileEntity) throws Exception {
-
+    public FileEntity uploadFile(FileDTO fileDTO) throws Exception {
         try {
-            MultipartFile fileToUpload = fileEntity.getFile();
+            MultipartFile fileToUpload = fileDTO.getFile();
             Path directory = Paths.get(uploadDir);
-            if (!Files.exists(directory)){
+            if (!Files.exists(directory)) {
                 Files.createDirectories(directory);
             }
 
-            //Save the file entity details
+            // Save the file entity details
             var file = new FileEntity();
-            file.setTitle(fileEntity.getTitle());
-            file.setFileType(fileEntity.getFileType());
-            file.setDescription(file.getDescription());
+            file.setTitle(fileDTO.getTitle());
+            file.setFileType(fileDTO.getFileType());
+            file.setDescription(fileDTO.getDescription());
             file.setDateUploaded(Date.valueOf(LocalDate.now()));
-            file.setFileName(fileEntity.getFile().getOriginalFilename());
+            file.setFileName(fileToUpload.getOriginalFilename());
+            file.setNumDownloads(0);
+            file.setNumEmails(0);
 
             // Save it in the directory
             Path filePath = directory.resolve(fileToUpload.getOriginalFilename());
-            log.info("File Path : {}",filePath);
+            log.info("File Path: {}", filePath);
             Files.write(filePath, fileToUpload.getBytes());
 
             return this.fileRepository.save(file);
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             throw new IOException("Failed to upload file: " + e.getMessage());
-        }
-
-        catch (Exception e){
-            throw new Exception("Error Message :"+e.getMessage());
+        } catch (Exception e) {
+            throw new Exception("Error Message: " + e.getMessage());
         }
     }
+
 
     @PreAuthorize("hasAuthority('ADMIN')")
     public void deleteFile(String title) throws FileNotFoundException {
