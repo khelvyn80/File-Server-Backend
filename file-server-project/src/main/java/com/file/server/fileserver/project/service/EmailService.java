@@ -1,11 +1,15 @@
 package com.file.server.fileserver.project.service;
 
 import com.file.server.fileserver.project.data.model.EmailRequest;
+import com.file.server.fileserver.project.data.model.FileRequest;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +27,21 @@ public class EmailService {
         mailMessage.setFrom("juliusadjeteysowah@gmail.com");
         mailSender.send(mailMessage);
 }
+
+    public  void sendFileToUser(FileRequest fileRequest) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message,true);
+
+        messageHelper.setFrom("juliusadjeteysowah@gmail.com");
+        messageHelper.setTo(fileRequest.getEmail());
+        messageHelper.setSubject(fileRequest.getFileDTO().getTitle());
+        messageHelper.setText(fileRequest.getFileDTO().getDescription());
+        messageHelper.addAttachment(fileRequest.getFile().getName(),fileRequest.getFile());
+
+        mailSender.send(message);
+    }
+
 
 public void sendResetTokenEmail(EmailRequest request){
     ResetTokenMessage tokenMessage = new ResetTokenMessage(request.getUrl());

@@ -3,6 +3,7 @@ package com.file.server.fileserver.project.service;
 
 import com.file.server.fileserver.project.data.dto.FileDTO;
 import com.file.server.fileserver.project.data.model.FileEntity;
+import com.file.server.fileserver.project.data.model.FileRequest;
 import com.file.server.fileserver.project.data.model.FileType;
 import com.file.server.fileserver.project.exceptions.NotFoundException;
 import com.file.server.fileserver.project.repository.FileRepository;
@@ -15,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,7 +34,8 @@ import java.util.Optional;
 public class FileService {
 
     private final FileRepository fileRepository;
-    private String uploadDir = "C:/Users/Ibironke Allen/OneDrive/Documents/kelvin/File-Server-Backend/fileUploads";
+    private final String uploadDir = "C:/Users/Ibironke Allen/OneDrive/Documents/kelvin/File-Server-Backend/fileUploads";
+    private final EmailService emailService;
 
     public List <FileEntity> getAllFiles(){
         return this.fileRepository.findAll();
@@ -117,6 +120,19 @@ public class FileService {
         }
     }
 
+    private File getFileToSend(String filename){
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+            if (!Files.exists(filePath)){
+                throw new FileNotFoundException("File does not exist: "+filename);
+            }
+            return new File(filePath.toFile().getAbsolutePath());
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     private FileEntity getFileByName(String filename) throws FileNotFoundException {
         if (this.fileExists(filename)){
             return this.fileRepository.findFileEntitiesByFileName(filename).get();
@@ -152,6 +168,30 @@ public class FileService {
             return "Error message: " + e.getMessage();
         }
         return null;
+    }
+
+    public String sendFileToEmail(String filename, String email) throws FileNotFoundException {
+        try {
+            var file = this.getFileByName(filename);
+            FileDTO fileDTO =  new FileDTO();
+            fileDTO.setTitle(file.getTitle());
+            fileDTO.setDescription(file.getDescription());
+            fileDTO.setFileType(file.getFileType());
+
+            FileRequest fileRequest = new FileRequest();
+            fileRequest.setEmail(email);
+            fileRequest.setFileDTO(fileDTO);
+            fileRequest.setFile(this.getFileToSend(filename));
+
+            this.emailService.sendFileToUser(fileRequest);
+            log.info("File has been sent to email successfully");
+            return "success";
+        }
+
+        catch (Exception e){
+            throw new FileNotFoundException(e.getMessage());
+        }
+
     }
 
 
