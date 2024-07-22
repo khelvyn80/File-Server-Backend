@@ -44,7 +44,7 @@ public class RegistrationEventCompleteListener {
         //5. Send/publish the url;
         log.info("Click on the ling to verify your account : {}",url);
         EmailRequest emailRequest = new EmailRequest(user.getEmail(), url);
-//        emailService.sendVerificationEmail(emailRequest);
+        emailService.sendVerificationEmail(emailRequest);
     }
 
     private static final int EXPIRATIONTIME = 15;

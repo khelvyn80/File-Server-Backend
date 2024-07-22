@@ -25,6 +25,7 @@ public class UserService implements IUserService{
 
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
     @Override
@@ -95,6 +96,7 @@ public class UserService implements IUserService{
         this.usersRepository.save(user.get());
         String resetLink = url+"resetpassword?token="+resetToken;
         log.info("Click on the link to reset your password {}", resetLink);
+        this.emailService.sendResetSuccessEmail(user.get().getEmail());
         return resetLink;
     }
 
@@ -102,8 +104,6 @@ public class UserService implements IUserService{
     public String validateResetToken(String token){
         System.out.println("I am starting the process");
         var user = this.usersRepository.findUsersByVerificationToken(token);
-
-
             return "valid";
 
     }
@@ -123,6 +123,7 @@ public class UserService implements IUserService{
         user.get().setPassword(this.passwordEncoder.encode(password));
         this.usersRepository.save(user.get());
         log.info("Passowrd updated successfully");
+        this.emailService.sendResetSuccessEmail(user.get().getEmail());
         return "updated";
     }
 
