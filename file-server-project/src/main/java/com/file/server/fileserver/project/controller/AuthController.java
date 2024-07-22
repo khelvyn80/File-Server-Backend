@@ -5,9 +5,8 @@ import com.file.server.fileserver.project.data.events.hello.RegistrationComplete
 import com.file.server.fileserver.project.data.model.Users;
 import com.file.server.fileserver.project.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,10 +62,11 @@ public class AuthController {
     }
 
     @PostMapping("/reset")
-    public ResponseEntity<String> resetpassword(String email, final HttpServletRequest request){
+    public ResponseEntity<String> reset(@RequestParam("email")String email, final HttpServletRequest request){
         try {
             String status = this.userService.resetPassword(email, applicationUrl(request));
-            return ResponseEntity.ok(status);
+
+            return ResponseEntity.ok("Click on the link to reset your password : "+status);
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -77,14 +77,18 @@ public class AuthController {
     @PostMapping("/resetpassword")
     public ResponseEntity<Void> validateResetToken(
             @RequestParam("token")String token,
-            @RequestParam("passowrd")String password,
+            @RequestParam("password")String password,
             @RequestParam("confirm") String confirm) throws URISyntaxException {
         try {
+            System.out.println("Initiating resetting password");
             String status = this.userService.validateResetToken(token);
+            System.out.println("This is the status "+status +" so i am redirecting");
             HttpHeaders headers = new HttpHeaders();
+            System.out.println("About resetting");
             if("valid".equalsIgnoreCase(status)){
-                URI uri = new URI("/update?token="+token+"&password="+password);
+                URI uri = new URI("/update?token="+token+"&password="+password+"&confirm="+confirm);
                 headers.setLocation(uri);
+                System.out.println("Done so i am now redirecting");
                 return new ResponseEntity<>(headers, HttpStatus.FOUND);
             }
         }
@@ -95,7 +99,7 @@ public class AuthController {
         return null;
     }
 
-    @PutMapping("/update")
+    @GetMapping("/update")
     public ResponseEntity<String> updatePassword(
             @RequestParam("token") String token,
             @RequestParam("password") String password,

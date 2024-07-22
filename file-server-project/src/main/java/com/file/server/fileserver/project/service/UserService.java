@@ -39,7 +39,8 @@ public class UserService implements IUserService{
 
                 }
                 Calendar calendar = Calendar.getInstance();
-                if (user.isPresent() && user.get().getTokenExpiry().getTime() - calendar.getTime().getTime()<= 0){
+                System.out.println(user.get().getTokenExpiry().getTime()-calendar.getTime().getTime());
+                if (user.isPresent() && user.get().getTokenExpiry().getTime() - calendar.getTime().getTime() >= 0){
                     throw new BadRequestException("Verification Token is Expired");
                 }
                 else {
@@ -61,9 +62,8 @@ public class UserService implements IUserService{
         }
         var newUser = new Users();
         newUser.setEmail(request.email());
-        newUser.setPassword(passwordEncoder.encode(request.password()));
         newUser.setRole(request.role());
-
+        newUser.setPassword(this.passwordEncoder.encode(request.password()));
         return this.usersRepository.save(newUser);
 
     }
@@ -100,17 +100,12 @@ public class UserService implements IUserService{
 
 
     public String validateResetToken(String token){
+        System.out.println("I am starting the process");
         var user = this.usersRepository.findUsersByVerificationToken(token);
-        if(user.isEmpty()){
-            throw new BadRequestException("Invalid User Token");
-        }
 
-        Calendar calendar = Calendar.getInstance();
-        if(user.isPresent() && user.get().getTokenExpiry().getTime() - calendar.getTime().getTime() <= 0){
-            throw new BadRequestException("Reset Token expired");
-        }
 
-        return "valid";
+            return "valid";
+
     }
 
     public String updatePassword(String email, String password, String confirm){
@@ -127,7 +122,7 @@ public class UserService implements IUserService{
         }
         user.get().setPassword(this.passwordEncoder.encode(password));
         this.usersRepository.save(user.get());
-        log.info("Passowrd updated successf");
+        log.info("Passowrd updated successfully");
         return "updated";
     }
 
