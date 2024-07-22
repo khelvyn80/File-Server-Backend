@@ -80,13 +80,6 @@ public class FileService {
     }
 
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public void deleteFile(String title) throws FileNotFoundException {
-        var file = this.fileRepository.findFileEntitiesByTitle(title)
-                .orElseThrow(() -> new FileNotFoundException("File does not exist"));
-        this.fileRepository.delete(file);
-    }
-
     public List <FileEntity> getFilesByFileType(FileType fileType){
         return this.fileRepository.findFileEntitiesByFileType(fileType);
     }
@@ -124,8 +117,42 @@ public class FileService {
         }
     }
 
+    private FileEntity getFileByName(String filename) throws FileNotFoundException {
+        if (this.fileExists(filename)){
+            return this.fileRepository.findFileEntitiesByFileName(filename).get();
+        }
+        else {
+            throw new FileNotFoundException("File does not exist");
+        }
+    }
+
 
     private boolean fileExists(String filename){
         return this.fileRepository.findFileEntitiesByFileName(filename).isPresent();
     }
+
+    public String deleteFile(String filename) {
+        try {
+            if (this.fileExists(filename)) {
+
+                Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+                log.info("Delete file path : {}", filePath);
+                if (Files.exists(filePath)) {
+                    this.fileRepository.delete(this.getFileByName(filename));
+                    Files.delete(filePath);
+
+                    return "File deleted successfully : " + filename;
+                } else {
+                    throw new NotFoundException("File does not exist,  " + filename);
+                }
+
+            }
+
+        } catch (IOException e) {
+            return "Error message: " + e.getMessage();
+        }
+        return null;
+    }
+
+
 }

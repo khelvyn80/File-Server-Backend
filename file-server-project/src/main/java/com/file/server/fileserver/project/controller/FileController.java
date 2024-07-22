@@ -64,25 +64,16 @@ public class FileController {
         }
     }
 
-    /**
     @DeleteMapping("/delete/{fileName}")
     public ResponseEntity<String> deleteFile(@PathVariable String fileName){
         try {
-            Path filePath =  Paths.get(uploadDir).resolve(fileName).normalize();
-            log.info("delete file path : {}",filePath);
-            if(Files.exists(filePath)){
-                Files.delete(filePath);
-                return ResponseEntity.ok("File deleted successfully: "+ fileName);
+                String response = this.fileService.deleteFile(fileName);;
+                return ResponseEntity.ok(response);
             }
-            else   {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: "+ fileName);
-            }
-
-        }
-        catch (IOException e){
+        catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to delete file: "+e.getMessage());
         }
     }
-    */
+
 }
