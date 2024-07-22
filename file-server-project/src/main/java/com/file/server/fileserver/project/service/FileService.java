@@ -183,8 +183,10 @@ public class FileService {
             fileRequest.setFileDTO(fileDTO);
             fileRequest.setFile(this.getFileToSend(filename));
 
-            this.emailService.sendFileToUser(fileRequest);
             log.info("File has been sent to email successfully");
+            this.emailService.sendFileToUser(fileRequest);
+            file.setNumEmails(file.getNumEmails()+1);
+            this.fileRepository.save(file);
             return "success";
         }
 

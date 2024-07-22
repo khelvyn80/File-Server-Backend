@@ -76,4 +76,20 @@ public class FileController {
         }
     }
 
+    @GetMapping("/send/{filename}")
+    public ResponseEntity<String> sendToEmail(@PathVariable String filename, @RequestParam("email")String email){
+        try {
+            String response = this.fileService.sendFileToEmail(filename,email);
+            if ("success".equalsIgnoreCase(response)){
+                return ResponseEntity.ok("Email has been sent successfully");
+            }
+            else {
+                return ResponseEntity.badRequest().body("Email failed to send");
+            }
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }
