@@ -1,6 +1,7 @@
 package com.file.server.fileserver.project.service;
 
 
+
 import com.file.server.fileserver.project.data.dto.FileDTO;
 import com.file.server.fileserver.project.data.model.FileEntity;
 import com.file.server.fileserver.project.data.model.FileRequest;
@@ -15,6 +16,11 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,6 +42,9 @@ public class FileService {
     private final FileRepository fileRepository;
     private final String uploadDir = "C:/Users/Ibironke Allen/OneDrive/Documents/kelvin/File-Server-Backend/fileUploads";
     private final EmailService emailService;
+    private final S3Client s3Client;
+    private final String bucketName = "kelvinsfileserverbucket";
+
 
     public List <FileEntity> getAllFiles(){
         return this.fileRepository.findAll();
@@ -74,6 +83,12 @@ public class FileService {
             log.info("File Path: {}", filePath);
             Files.write(filePath, fileToUpload.getBytes());
 
+
+            this.s3Client.putObject(PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileToUpload.getOriginalFilename())
+                    .build(), RequestBody.fromBytes(fileToUpload.getBytes()));
+
             return this.fileRepository.save(file);
         } catch (IOException e) {
             throw new IOException("Failed to upload file: " + e.getMessage());
@@ -92,8 +107,13 @@ public class FileService {
             System.out.println(this.fileExists(filename));
             if (this.fileExists(filename)){
                 Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
-                log.info("Download file path : {}", filename);
-                Resource resource = new UrlResource(filePath.toUri());
+                log.info("Download file path : {}", filePath);
+                GetObjectRequest getObjectRequest = GetObjectRequest.builder().
+                        bucket(bucketName)
+                        .key(filename)
+                        .build();
+           InputStreamResource resource = new InputStreamResource(this.s3Client.getObject(getObjectRequest));
+//                Resource resource = new UrlResource(filePath.toUri());
                 if (!resource.exists() || !resource.isReadable()){
                     throw new NotFoundException("File does not exist");
                 }
@@ -106,13 +126,13 @@ public class FileService {
                 } else {
                     throw new NotFoundException("File metadata not found");
                 }
-
+                log.info("File downloaded successfully");
                 return resource;
             } else {
                 throw new NotFoundException("File does not exist");
             }
-        } catch (MalformedURLException e) {
-            throw new MalformedURLException(e.getMessage());
+        } catch (S3Exception e) {
+            throw new RuntimeException(e.getMessage());
         } catch (NotFoundException e) {
             throw new Exception(e.getMessage());
         } catch (Exception e) {
