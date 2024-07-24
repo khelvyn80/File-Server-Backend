@@ -8,6 +8,7 @@ import com.file.server.fileserver.project.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -50,6 +51,7 @@ public class FileController {
         try {
             System.out.println("This is the beginning of the downloads");
             Resource resource = this.fileService.downloadFile(filename);
+
             System.out.println(resource.getFilename());
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)

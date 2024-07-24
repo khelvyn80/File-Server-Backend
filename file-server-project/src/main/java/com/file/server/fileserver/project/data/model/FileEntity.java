@@ -14,6 +14,7 @@ public class FileEntity {
     private Long fileId;
     private String title;
     private String description;
+    private String filePath;
     @Enumerated(EnumType.STRING)
     private FileType fileType;
     private String fileName;
