@@ -94,4 +94,9 @@ public class FileController {
         }
     }
 
+    @GetMapping("/greetings")
+    public ResponseEntity<String> greetings(){
+        return ResponseEntity.ok("Welcome to spring world");
+    }
+
 }

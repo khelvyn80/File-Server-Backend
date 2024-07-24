@@ -5,6 +5,7 @@ import com.file.server.fileserver.project.data.model.Role;
 public record AuthenticationRequest(
         String email,
         String password,
+        String confirm,
         Role role
 ) {
 }

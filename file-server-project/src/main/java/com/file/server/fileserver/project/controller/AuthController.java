@@ -2,6 +2,7 @@ package com.file.server.fileserver.project.controller;
 
 import com.file.server.fileserver.project.data.dto.AuthenticationRequest;
 import com.file.server.fileserver.project.data.events.hello.RegistrationCompleteEvent;
+import com.file.server.fileserver.project.data.model.Role;
 import com.file.server.fileserver.project.data.model.Users;
 import com.file.server.fileserver.project.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,8 @@ public class AuthController {
             @RequestBody AuthenticationRequest authenticationRequest,
             final HttpServletRequest request){
         try {
+
+
             var user = new Users();
             user.setEmail(authenticationRequest.email());
             user.setPassword(authenticationRequest.password());
